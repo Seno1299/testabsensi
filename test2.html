@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Validasi Lokasi Patroli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+    a.button {
+      display: inline-block;
+      background: #2e8b57;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🛡️ Absensi Patroli Satpam</h2>
+  <p id="status">📍 Mengambil lokasi GPS...</p>
+
+  <script>
+    const formLink = "https://forms.gle/3STG4fQNypWf27HR7";
+    const targetLat = -6.193056;
+    const targetLng = 106.935278;
+    const maxDistance = 1;
+
+    if (!navigator.geolocation) {
+      document.getElementById("status").innerText = "⚠️ Perangkat tidak mendukung GPS.";
+    } else {
+      navigator.geolocation.getCurrentPosition(showPosition, showError, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    }
+
+    function showPosition(position) {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+      const distance = hitungJarak(userLat, userLng, targetLat, targetLng);
+
+      if (distance <= maxDistance) {
+        document.getElementById("status").innerHTML = `
+          ✅ Lokasi valid (${distance.toFixed(2)} m)<br>
+          <a href="${formLink}" class="button" target="_blank">Isi Absensi</a>`;
+      } else {
+        document.getElementById("status").innerHTML = `
+          ❌ Kamu berada terlalu jauh dari titik pos.<br>
+          Jarak: ${distance.toFixed(2)} meter<br>
+          Silakan dekati lokasi.`;
+      }
+    }
+
+    function showError(error) {
+      document.getElementById("status").innerText = "❗ Gagal mengambil lokasi. Aktifkan GPS dan coba lagi.";
+    }
+
+    // Rumus haversine
+    function hitungJarak(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const toRad = angle => angle * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+  </script>
+</body>
+</html>
