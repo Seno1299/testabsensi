@@ -1,0 +1,58 @@
+Code QR code + GPS
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Validasi Lokasi Patroli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:20px;">
+  <h2>🛡️ Validasi Lokasi Patroli</h2>
+  <p id="status">📍 Menunggu lokasi GPS...</p>
+
+  <script>
+    const formLink = "https://forms.gle/CQGbGpcP9kNYEyvn6";
+
+    const targetLat = -6.193056;
+    const targetLng = 106.935278;
+
+    if (!navigator.geolocation) {
+      document.getElementById("status").innerText = "⚠️ GPS tidak tersedia di perangkat ini.";
+    } else {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const jarak = hitungJarak(lat, lng, targetLat, targetLng);
+
+      if (jarak <= 01) {
+        document.getElementById("status").innerHTML = `
+          ✅ Lokasi valid (${Math.round(jarak)} meter)<br><br>
+          <a href="${formLink}" style="padding:10px 20px; background:#28a745; color:white; text-decoration:none; border-radius:8px;">Isi Absensi</a>`;
+      } else {
+        document.getElementById("status").innerHTML = `
+          ❌ Kamu terlalu jauh dari lokasi patroli.<br>Jarakmu: ${Math.round(jarak)} meter`;
+      }
+    }
+
+    function showError(error) {
+      document.getElementById("status").innerText = "⚠️ Gagal ambil lokasi. Pastikan izin GPS aktif.";
+    }
+
+    function hitungJarak(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; 
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+  </script>
+</body>
+</html>
